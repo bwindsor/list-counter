@@ -1,0 +1,78 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Specification for API for list counter ${deployment_name}",
+        "version": "1.0",
+        "title": "${deployment_name} API"
+    },
+    "basePath": "/",
+    "paths": {
+        "/item": {
+            "post": {
+                "summary": "Add a new list item",
+                "consumes": "application/json",
+                "produces": "application/json",
+                "parameters": [{
+                    "in": "body",
+                    "name": "body",
+                    "description": "List item to be added",
+                    "required": true,
+                    "schema": {"$ref": "#/definitions/Item"}
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successfully added",
+                        "schema": {"$ref": "#/definitions/Item"}
+                    },
+                    "405": {"description": "Invalid input"}
+                }
+            },
+            "get": {
+                "summary": "Get all list items",
+                "produces": "application/json",
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Item"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/item/{itemId}": {
+            "put": {
+                "summary": "Update a list item by id",
+                "consumes": "application/json",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name":  "body",
+                        "description": "List item to be updated",
+                        "required": true,
+                        "schema": {"$ref": "#/definitions/Item"}
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Item": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"},
+                "count": {"type": "integer"}
+            }
+        }
+    }
+}
