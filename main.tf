@@ -70,14 +70,29 @@ data "archive_file" "distribute_lambda_putItem" {
     output_path = "${path.module}/artifacts/distribute_lambda_putItem.zip"
     source_file = "${path.module}/lambda/PutItem.js"
 }
-data "archive_file" "distribute_lambda_GetAllItems" {
+data "archive_file" "distribute_lambda_getAllItems" {
     type        = "zip"
-    output_path = "${path.module}/artifacts/distribute_lambda_GetAllItems.zip"
+    output_path = "${path.module}/artifacts/distribute_lambda_getAllItems.zip"
     source_file = "${path.module}/lambda/GetAllItems.js"
 }
 
-/* Get numbers and counts */
-
+/* Get strings and counts */
+resource "aws_lambda_function" "getAllItems" {
+    filename         = "${data.archive_file.distribute_lambda_getAllItems.output_path}"
+    function_name    = "${local.deployment_name}-get-all-items"
+    role             = "${aws_iam_role.iam_for_lambda.arn}"
+    handler          = "GetAllItems.handler"
+    source_code_hash = "${base64sha256(file("${data.archive_file.distribute_lambda_getAllItems.output_path}"))}"
+    runtime          = "nodejs8.10"
+    timeout          = 5
+    memory_size      = 128
+    description      = "Gets all items from the database"
+    environment {
+        variables = {
+            DB_TABLE_NAME = "${aws_dynamodb_table.main-table.id}"   
+        }
+    }
+}
 
 /* Create or update item */
 resource "aws_lambda_function" "putItem" {

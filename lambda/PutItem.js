@@ -8,7 +8,7 @@ async function PutItem(itemName, itemCount) {
     var ddb = new AWS.DynamoDB({ apiVersion: '2012-10-08' });
 
     var params = {
-        TableName: process.env.DB_TABLE_NAME,
+        TableName: process.env.DB_TABLE_NAME.trim(),
         Item: {
             'ItemName': { S: itemName },
             'ItemCount': { N: itemCount.toString() }
