@@ -9,9 +9,9 @@
     "paths": {
         "/item": {
             "post": {
-                "summary": "Add a new list item",
-                "consumes": "application/json",
-                "produces": "application/json",
+                "summary": "Add or update a list item",
+                "consumes": ["application/json"],
+                "produces": ["application/json"],
                 "parameters": [{
                     "in": "body",
                     "name": "body",
@@ -29,7 +29,7 @@
             },
             "get": {
                 "summary": "Get all list items",
-                "produces": "application/json",
+                "produces": ["application/json"],
                 "responses": {
                     "200": {
                         "description": "Successfully fetched",
@@ -42,26 +42,6 @@
                     }
                 }
             }
-        },
-        "/item/{itemId}": {
-            "put": {
-                "summary": "Update a list item by id",
-                "consumes": "application/json",
-                "parameters": [
-                    {
-                        "in": "body",
-                        "name":  "body",
-                        "description": "List item to be updated",
-                        "required": true,
-                        "schema": {"$ref": "#/definitions/Item"}
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully updated"
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -69,7 +49,6 @@
             "type": "object",
             "required": ["name"],
             "properties": {
-                "id": {"type": "integer"},
                 "name": {"type": "string"},
                 "count": {"type": "integer"}
             }

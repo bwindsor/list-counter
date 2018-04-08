@@ -1,0 +1,27 @@
+{
+  "name": "list-counter",
+  "version": "1.0.0",
+  "description": "This allows a list of items to be made and searched, and for users to click a button to add one to the count of items.",
+  "main": "index.js",
+  "scripts": {
+    "deploy-setup": "terraform init && terraform workspace new production && terraform workspace new test",
+    "AddItem": "node lambda/AddItem/AddItem.js",
+    "test": "terraform workspace select test && mocha test/**/*.spec.js",
+    "deploy-test": "terraform workspace select test && terraform apply",
+    "deploy-prod": "terraform workspace select production && terraform apply"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bwindsor/list-counter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bwindsor/list-counter/issues"
+  },
+  "homepage": "https://github.com/bwindsor/list-counter#readme",
+  "devDependencies": {
+    "aws-sdk": "^2.222.1",
+    "mocha": "^5.0.5"
+  }
+}
