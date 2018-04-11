@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Specification for API for list counter ${deployment_name}",
+        "description": "${api_description}",
         "version": "1.0",
         "title": "${deployment_name} API"
     },
@@ -25,6 +25,12 @@
                         "schema": {"$ref": "#/definitions/Item"}
                     },
                     "405": {"description": "Invalid input"}
+                },
+                "x-amazon-apigateway-integration" : {
+                    "type" : "aws_proxy",
+                    "uri" : "${lambda_put_item_invoke_uri}",
+                    "httpMethod" : "POST",
+                    "credentials" : "${lambda_exec_role_arn}"
                 }
             },
             "get": {
@@ -40,6 +46,12 @@
                             }
                         }
                     }
+                },
+                "x-amazon-apigateway-integration" : {
+                    "type" : "aws_proxy",
+                    "uri" : "${lambda_get_all_invoke_uri}",
+                    "httpMethod" : "POST",
+                    "credentials" : "${lambda_exec_role_arn}"
                 }
             }
         }

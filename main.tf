@@ -24,7 +24,8 @@ variable "deployment_title" {
     description = "Name for this deployment"
 }
 locals {
-  deployment_name = "${var.deployment_title}-${terraform.workspace}"
+    deployment_name = "${var.deployment_title}-${terraform.workspace}"
+    api_description = "Specification for API for list counter ${local.deployment_name}"
 }
 
 /* S3 bucket for frontend */
@@ -46,8 +47,6 @@ resource "aws_s3_bucket" "website" {
         max_age_seconds = 3000
     }
 }
-
-/* S3 bucket for DB snapshots */
 
 /* DynamoDB Database */
 resource "aws_dynamodb_table" "main-table" {
@@ -111,8 +110,6 @@ resource "aws_lambda_function" "putItem" {
         }
     }
 }
-
-/* DB backup */
 
 /* Lambda execution role */
 resource "aws_iam_role" "iam_for_lambda" {
@@ -188,20 +185,82 @@ EOF
 }
 
 /*** API gateway ***/
+/* Main API spec */
 resource "aws_api_gateway_rest_api" "list-counter-api" {
-    name        = "list-counter-api-gateway-${local.deployment_name}"
-    description = "API for list counter"
+    name        = "${local.deployment_name} API"
+    description = "${local.api_description}"
     body        = "${data.template_file.api-spec.rendered}"
+}
+
+resource "aws_api_gateway_deployment" "list-counter-deployment" {
+    rest_api_id = "${aws_api_gateway_rest_api.list-counter-api.id}"
+    stage_name  = "prod"
 }
 
 data "template_file" "api-spec" {
     template = "${file("api_spec.json")}"
 
     vars {
+        api_description = "${local.api_description}"
         deployment_name = "${local.deployment_name}"
+        lambda_put_item_invoke_uri = "${aws_lambda_function.putItem.invoke_arn}"
+        lambda_get_all_invoke_uri = "${aws_lambda_function.getAllItems.invoke_arn}"
+        lambda_exec_role_arn = "${aws_iam_role.iam_for_api_gateway.arn}"
     }
 }
 
+/* API execution role */
+resource "aws_iam_role" "iam_for_api_gateway" {
+  name = "${local.deployment_name}-api-gateway-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": ["apigateway.amazonaws.com"]
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+/* Policy attached to lambda execution role to allow execution of lambda */
+resource "aws_iam_role_policy" "api_gateway_execute_lambda_policy" {
+    name = "${local.deployment_name}-execute-lambda-policy"
+    role = "${aws_iam_role.iam_for_api_gateway.id}"
+
+    policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+/* Permission on lambda's end to allow API gateway to invoke it */
+resource "aws_lambda_permission" "allow_api_gateway" {
+    statement_id   = "${local.deployment_name}-AllowExecutionFromAPIGateway"
+    action         = "lambda:InvokeFunction"
+    function_name  = "${aws_lambda_function.getAllItems.function_name}"
+    principal      = "apigateway.amazonaws.com"
+    source_arn     = "${aws_api_gateway_deployment.list-counter-deployment.execution_arn}"
+}
+
+/* Output the URL to find the API at */
 output "api_base" {
-    value = "${aws_api_gateway_rest_api.list-counter-api.root_resource_id}"
+    value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
 }

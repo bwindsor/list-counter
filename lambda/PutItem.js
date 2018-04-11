@@ -29,7 +29,15 @@ async function PutItem(itemName, itemCount) {
 
 // Lambda wrapper
 async function handler(event, context) {
-    return await PutItem(event.name, event.count);
+    var input = JSON.parse(event.body);
+    var data = await PutItem(input.name, input.count);
+    
+    return {
+        "statusCode": 200,
+        "headers": {},
+        "body": JSON.stringify(data),
+        "isBase64Encoded": false
+    };
 }  
 
 module.exports = {

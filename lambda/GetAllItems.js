@@ -29,7 +29,13 @@ async function GetAllItems() {
 
 // Lambda wrapper
 async function handler(event, context) {
-    return await GetAllItems();
+    var data = await GetAllItems();
+    return {
+        "statusCode": 200,
+        "headers": {},
+        "body": JSON.stringify(data),
+        "isBase64Encoded": false
+    };
 }  
 
 module.exports = {
