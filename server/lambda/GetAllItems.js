@@ -32,7 +32,10 @@ async function handler(event, context) {
     var data = await GetAllItems();
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
         "body": JSON.stringify(data),
         "isBase64Encoded": false
     };

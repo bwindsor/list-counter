@@ -34,7 +34,9 @@ async function handler(event, context) {
     
     return {
         "statusCode": 200,
-        "headers": {},
+        "headers": {
+            "Access-Control-Allow-Origin": "*"
+        },
         "body": JSON.stringify(data),
         "isBase64Encoded": false
     };
