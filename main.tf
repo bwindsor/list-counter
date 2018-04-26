@@ -260,22 +260,6 @@ resource "aws_lambda_permission" "allow_api_gateway" {
     source_arn     = "${aws_api_gateway_deployment.list-counter-deployment.execution_arn}"
 }
 
-/* Set API throttle at quite a low rate since it won't be used that much */
-resource "aws_api_gateway_usage_plan" "api_usage_plan" {
-  name         = "${local.deployment_name}-usage-plan"
-  description  = "Usage plan for ${local.deployment_name} API"
-  
-  api_stages {
-    api_id = "${aws_api_gateway_rest_api.list-counter-api.id}"
-    stage  = "${aws_api_gateway_deployment.list-counter-deployment.stage_name}"
-  }
-
-  throttle_settings {
-    burst_limit = 5
-    rate_limit  = 10
-  }
-}
-
 /* Output the URL to find the API at */
 output "api_base" {
     value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
