@@ -264,3 +264,6 @@ resource "aws_lambda_permission" "allow_api_gateway" {
 output "api_base" {
     value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
 }
+output "env" {
+    value = "SET AWS_REGION=${var.aws_region}&& SET DB_TABLE_NAME=${aws_dynamodb_table.main-table.id}&& SET API_BASE=${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
+}

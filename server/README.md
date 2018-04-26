@@ -6,11 +6,9 @@
 `terraform init`
 
 ## Testing
-```
-SET AWS_PROFILE=<aws profile name>
-SET DB_TABLE_NAME=DanStories-test-main-table
-SET AWS_REGION=us-east-1
-```
+```SET AWS_PROFILE=<aws profile name>```
+
+Set up environment by executing the output of `terraform output env`
 
 `npm test`
 
