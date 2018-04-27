@@ -5,3 +5,13 @@ body {
 .plus-one {
     width: 45px;
 }
+
+@media screen and (max-width: 350px) {
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+.input-invalid {
+    box-shadow: 0 0 0 0.2rem red;
+}

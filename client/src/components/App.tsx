@@ -19,7 +19,7 @@ export default class App extends React.Component<undefined, AppState> {
         super(props)
         this.state = {
             apiClient: new ApiClient(API_BASE),
-            items: []
+            items: null
         }
     }
 
@@ -47,7 +47,7 @@ export default class App extends React.Component<undefined, AppState> {
     addStory(name: string) {
         let newItem: Item = {
             name: name,
-            count: 0
+            count: 1
         }
         this.state.apiClient.putItem(newItem).then(() => {
             let updatedItems = this.state.items.slice(0)
@@ -56,7 +56,7 @@ export default class App extends React.Component<undefined, AppState> {
         })
     }
 
-    plusOne(name: string) : Promise<void> {
+    plusOne(name: string): Promise<void> {
         return this.state.apiClient.incrementItem(name).then(newCount => {
             let updatedItems = this.state.items.slice(0)
             let idxToUpdate = updatedItems.map(d => d.name).indexOf(name)
@@ -69,14 +69,28 @@ export default class App extends React.Component<undefined, AppState> {
     }
 
     render() {
+
+        if (this.state.items === null) {
+            return (
+                <div className={this.rowClass}>Loading...</div>
+            )
+        }
+
         let names = this.state.items.map(d => d.name)
 
         return <div className="container-fluid">
-                <NewStory
-                    rowClass={this.rowClass}
-                    onAdd={s => this.addStory(s)}
-                    nameValidator={s => validateStoryName(s, names)}
-                />
+            <div className={this.rowClass}>
+                <div className="col">
+                    <h2>
+                        Just heard a Dan story? Give it a +1
+                </h2>
+                </div>
+            </div>
+            <NewStory
+                rowClass={this.rowClass}
+                onAdd={s => this.addStory(s)}
+                nameValidator={s => validateStoryName(s, names)}
+            />
             {this.state.items.map((item, i) => this.renderStoryRow(item, i))}
         </div>
     }

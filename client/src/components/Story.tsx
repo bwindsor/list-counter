@@ -13,8 +13,8 @@ interface StoryState {
 export default class Story extends React.Component<StoryProps, StoryState> {
     
     render() {
-        return <div><p>
+        return <div>
             {this.props.name}: {this.props.count}
-        </p></div>
+        </div>
     }
 }

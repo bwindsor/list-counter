@@ -40,30 +40,39 @@ export default class Story extends React.Component<NewStoryProps, NewStoryState>
         let isNameValid = this.props.nameValidator(this.state.name)
 
         return <div className={this.props.rowClass}>
-            <div className="col-12 col-sm mr-auto p-1">
-                <input
-                    type="text"
-                    onChange={e => this.setState({ name: e.target.value })}
-                    value={this.state.name}
-                    placeholder="Enter name for new story"
-                    className={"form-control"}
-                />
-            </div>
-            <div className="col-auto p-1">
-                <button
-                    className={"btn btn-primary" + (isNameValid ? "" : " disabled")}
-                    onClick={isNameValid ? e => this.onOKClick() : e => { }}>
-                    OK
-            </button>
-            </div>
-            <div className="col-auto p-1">
-                <button className="btn btn-danger" onClick={e => this.setState({ isExpanded: false })}>Cancel</button>
+            <div className="col">
+                <div className="row">
+                    <div className="col-12 col-sm mr-auto p-1">
+                        <input
+                            type="text"
+                            onChange={e => this.setState({ name: e.target.value })}
+                            value={this.state.name}
+                            placeholder="Description of new story"
+                            className={"form-control" + (isNameValid ? "" : " input-invalid")}
+                        />
+                    </div>
+                    <div className="col-auto p-1">
+                        <button
+                            className={"btn btn-primary" + (isNameValid ? "" : " disabled")}
+                            onClick={isNameValid ? e => this.onOKClick() : e => { }}>
+                            OK
+                        </button>
+                    </div>
+                    <div className="col-auto p-1">
+                        <button className="btn btn-danger" onClick={e => this.setState({ isExpanded: false })}>Cancel</button>
+                    </div>
+                </div>
+                <div className="row">
+                    <small className="form-text text-muted px-1">
+                        Must be 4-100 characters
+                    </small>
+                </div>
             </div>
         </div>
     }
 
     onOKClick() {
-        this.props.onAdd(this.state.name)
+        this.props.onAdd(this.state.name.trim())
         this.setState({ isExpanded: false, name: "" })
     }
 }
