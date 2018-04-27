@@ -108,6 +108,11 @@ data "archive_file" "distribute_lambda_putItem" {
     output_path = "${path.module}/artifacts/distribute_lambda_putItem.zip"
     source_file = "${path.module}/lambda/PutItem.js"
 }
+data "archive_file" "distribute_lambda_incrementItem" {
+    type        = "zip"
+    output_path = "${path.module}/artifacts/distribute_lambda_incrementItem.zip"
+    source_file = "${path.module}/lambda/IncrementItem.js"
+}
 data "archive_file" "distribute_lambda_getAllItems" {
     type        = "zip"
     output_path = "${path.module}/artifacts/distribute_lambda_getAllItems.zip"
@@ -148,6 +153,24 @@ resource "aws_lambda_function" "putItem" {
     timeout          = 5
     memory_size      = 128
     description      = "Adds or updates an item in the database"
+    environment {
+        variables = {
+            DB_TABLE_NAME = "${aws_dynamodb_table.main-table.id}"   
+        }
+    }
+}
+
+/* Increment item */
+resource "aws_lambda_function" "incrementItem" {
+    filename         = "${data.archive_file.distribute_lambda_incrementItem.output_path}"
+    function_name    = "${local.deployment_name}-increment-item"
+    role             = "${aws_iam_role.iam_for_lambda.arn}"
+    handler          = "IncrementItem.handler"
+    source_code_hash = "${base64sha256(file("${data.archive_file.distribute_lambda_incrementItem.output_path}"))}"
+    runtime          = "nodejs8.10"
+    timeout          = 5
+    memory_size      = 128
+    description      = "Increments count on an item in the database by one"
     environment {
         variables = {
             DB_TABLE_NAME = "${aws_dynamodb_table.main-table.id}"   
@@ -238,7 +261,8 @@ resource "aws_iam_role_policy" "lambda_dynamodb_access_policy" {
                 "dynamodb:GetItem",
                 "dynamodb:Scan",
                 "dynamodb:Query",
-                "dynamodb:CreateBackup"
+                "dynamodb:CreateBackup",
+                "dynamodb:UpdateItem"
             ],
             "Resource": "${aws_dynamodb_table.main-table.arn}"
         }
@@ -270,6 +294,7 @@ data "template_file" "api-spec" {
         deployment_name = "${local.deployment_name}"
         access_control_allow_origin = "${terraform.workspace == "production" ? "http://${aws_s3_bucket.website.website_endpoint}" : "*"}"
         lambda_put_item_invoke_uri = "${aws_lambda_function.putItem.invoke_arn}"
+        lambda_increment_item_invoke_uri = "${aws_lambda_function.incrementItem.invoke_arn}"
         lambda_get_all_invoke_uri = "${aws_lambda_function.getAllItems.invoke_arn}"
         lambda_exec_role_arn = "${aws_iam_role.iam_for_api_gateway.arn}"
     }
