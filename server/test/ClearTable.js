@@ -1,9 +1,10 @@
 // Load the AWS SDK for Node.js
 var AWS = require('aws-sdk');
+const env = require('./TerraformOutput')
 
 async function ClearTable() {
     
-    var TABLE_NAME = process.env.DB_TABLE_NAME;
+    var TABLE_NAME = env.db_table_name;
     
     if (TABLE_NAME.toLowerCase().includes('prod')) {
         throw new Error('Table will not be cleared on a table with prod in the name.');

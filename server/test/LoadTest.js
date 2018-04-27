@@ -1,10 +1,11 @@
 const fetch = require('node-fetch');
 var mocha = require('mocha');
 var assert = require('assert');
+const env = require('./TerraformOutput')
 
 describe('LoadTest', () => {
     it('complains about too many requests', async () => {
-        var API_BASE = process.env.API_BASE;
+        var API_BASE = env.api_base;
 
         let promises = [];
         for (let i = 0; i < 100; i++) {

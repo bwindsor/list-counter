@@ -302,12 +302,16 @@ resource "aws_lambda_permission" "allow_api_gateway" {
 }
 
 /* Output the URL to find the API at */
-output "api_base" {
-    value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
-}
 output "website_endpoint" {
     value = "${aws_s3_bucket.website.website_endpoint}"
 }
-output "env" {
-    value = "SET AWS_REGION=${var.aws_region}&& SET DB_TABLE_NAME=${aws_dynamodb_table.main-table.id}&& SET API_BASE=${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
+
+output "aws_region" {
+    value = "${var.aws_region}"
+}
+output "db_table_name" {
+    value = "${aws_dynamodb_table.main-table.id}"
+}
+output "api_base" {
+    value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
 }

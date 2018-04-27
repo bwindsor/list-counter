@@ -5,10 +5,9 @@
 
 `terraform init`
 
-## Testing
-```SET AWS_PROFILE=<aws profile name>```
-
-Set up environment by executing the output of `terraform output env`
+## Integration Testing
+`SET AWS_PROFILE=<aws profile name>`
+`SET AWS_REGION=us-east-1`
 
 `npm test`
 
