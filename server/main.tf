@@ -193,6 +193,8 @@ resource "aws_api_gateway_rest_api" "list-counter-api" {
 }
 
 resource "aws_api_gateway_deployment" "list-counter-deployment" {
+    depends_on = ["data.template_file.api-spec"]
+
     rest_api_id = "${aws_api_gateway_rest_api.list-counter-api.id}"
     stage_name  = "prod"
 }

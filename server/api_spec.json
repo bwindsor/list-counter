@@ -10,27 +10,39 @@
         "/item": {
             "post": {
                 "summary": "Add or update a list item",
-                "consumes": ["application/json"],
-                "produces": ["application/json"],
-                "parameters": [{
-                    "in": "body",
-                    "name": "body",
-                    "description": "List item to be added",
-                    "required": true,
-                    "schema": {"$ref": "#/definitions/Item"}
-                }],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "List item to be added",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successfully added",
-                        "schema": {"$ref": "#/definitions/Item"}
+                        "schema": {
+                            "$ref": "#/definitions/Item"
+                        }
                     },
-                    "405": {"description": "Invalid input"}
+                    "405": {
+                        "description": "Invalid input"
+                    }
                 },
-                "x-amazon-apigateway-integration" : {
-                    "type" : "aws_proxy",
-                    "uri" : "${lambda_put_item_invoke_uri}",
-                    "httpMethod" : "POST",
-                    "credentials" : "${lambda_exec_role_arn}",
+                "x-amazon-apigateway-integration": {
+                    "type": "aws_proxy",
+                    "uri": "${lambda_put_item_invoke_uri}",
+                    "httpMethod": "POST",
+                    "credentials": "${lambda_exec_role_arn}",
                     "responses": {
                         "default": {
                             "statusCode": "200"
@@ -40,7 +52,9 @@
             },
             "get": {
                 "summary": "Get all list items",
-                "produces": ["application/json"],
+                "produces": [
+                    "application/json"
+                ],
                 "responses": {
                     "200": {
                         "description": "Successfully fetched",
@@ -52,14 +66,62 @@
                         }
                     }
                 },
-                "x-amazon-apigateway-integration" : {
-                    "type" : "aws_proxy",
-                    "uri" : "${lambda_get_all_invoke_uri}",
-                    "httpMethod" : "POST",
-                    "credentials" : "${lambda_exec_role_arn}",
+                "x-amazon-apigateway-integration": {
+                    "type": "aws_proxy",
+                    "uri": "${lambda_get_all_invoke_uri}",
+                    "httpMethod": "POST",
+                    "credentials": "${lambda_exec_role_arn}",
                     "responses": {
                         "default": {
                             "statusCode": "200"
+                        }
+                    }
+                }
+            },
+            "options": {
+                "summary": "CORS Support",
+                "description": "Enable CORS by returning correct headers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "x-amazon-apigateway-integration": {
+                    "type": "mock",
+                    "requestTemplates": {
+                        "application/json": "{ \"statusCode\": 200 }"
+                    },
+                    "responses": {
+                        "default": {
+                            "statusCode": "200",
+                            "responseParameters": {
+                                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                                "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+                                "method.response.header.Access-Control-Allow-Origin": "'*'"
+                            },
+                            "responseTemplates": {
+                                "application/json": ""
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Default response for CORS method",
+                        "headers": {
+                            "Access-Control-Allow-Headers": {
+                                "type": "string"
+                            },
+                            "Access-Control-Allow-Methods": {
+                                "type": "string"
+                            },
+                            "Access-Control-Allow-Origin": {
+                                "type": "string"
+                            }
+                        },
+                        "schema": {
+                            "$ref": "#/definitions/Empty"
                         }
                     }
                 }
@@ -69,11 +131,21 @@
     "definitions": {
         "Item": {
             "type": "object",
-            "required": ["name"],
+            "required": [
+                "name"
+            ],
             "properties": {
-                "name": {"type": "string"},
-                "count": {"type": "integer"}
+                "name": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                }
             }
+        },
+        "Empty": {
+            "type": "object",
+            "title": "Empty Schema"
         }
     }
 }
