@@ -268,6 +268,7 @@ data "template_file" "api-spec" {
     vars {
         api_description = "${local.api_description}"
         deployment_name = "${local.deployment_name}"
+        access_control_allow_origin = "${terraform.workspace == "production" ? "http://${aws_s3_bucket.website.website_endpoint}" : "*"}"
         lambda_put_item_invoke_uri = "${aws_lambda_function.putItem.invoke_arn}"
         lambda_get_all_invoke_uri = "${aws_lambda_function.getAllItems.invoke_arn}"
         lambda_exec_role_arn = "${aws_iam_role.iam_for_api_gateway.arn}"
