@@ -40,7 +40,8 @@ module.exports = {
      plugins: [
         new CopyWebpackPlugin([
             { from: './src/style.css'},
-            { from: './src/index.html'}
+            { from: './src/index.html'},
+            { from: './src/environment.js'}
         ])
      ],
 

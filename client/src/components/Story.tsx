@@ -1,7 +1,6 @@
 import * as React from "react"
 import ApiClient from "../ApiClient"
 import {Item} from "../ApiClient"
-import * as links from "../resources/links"
 
 interface StoryProps {
     name: string

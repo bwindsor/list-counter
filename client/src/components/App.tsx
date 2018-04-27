@@ -1,7 +1,6 @@
 import * as React from "react"
 import ApiClient from "../ApiClient"
 import { Item } from "../ApiClient"
-import * as links from "../resources/links"
 import Story from "./Story"
 import PlusOne from "./PlusOne"
 import NewStory from "./NewStory"
@@ -19,7 +18,7 @@ export default class App extends React.Component<undefined, AppState> {
     constructor(props: any) {
         super(props)
         this.state = {
-            apiClient: new ApiClient(links.API_BASE),
+            apiClient: new ApiClient(API_BASE),
             items: []
         }
     }

@@ -38,14 +38,53 @@ resource "aws_s3_bucket" "website" {
         index_document = "index.html"
         error_document = "error.html"
     }
+}
 
-    cors_rule {
-        allowed_headers = ["*"]
-        allowed_methods = ["PUT", "POST"]
-        allowed_origins = ["https://s3-website-test.hashicorp.com"]
-        expose_headers  = ["ETag"]
-        max_age_seconds = 3000
+/* Frontend */
+resource "aws_s3_bucket_object" "homepage" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  content_type = "text/html"
+  key    = "index.html"
+  source = "../client/dist/index.html"
+  etag   = "${md5(file("../client/dist/index.html"))}"
+}
+resource "aws_s3_bucket_object" "stylesheet" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  content_type = "text/css"
+  key    = "style.css"
+  source = "../client/dist/style.css"
+  etag   = "${md5(file("../client/dist/style.css"))}"
+}
+resource "aws_s3_bucket_object" "bundle" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  content_type = "application/javascript"
+  key    = "bundle.js"
+  source = "../client/dist/bundle.js"
+  etag   = "${md5(file("../client/dist/bundle.js"))}"
+}
+resource "aws_s3_bucket_object" "environment" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  content_type = "application/javascript"
+  key    = "environment.js"
+  content = "${data.template_file.js-environment.rendered}"
+}
+data "template_file" "js-environment" {
+    template = "${file("environment.js")}"
+
+    vars {
+        api_base = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
     }
+}
+resource "aws_s3_bucket_object" "sourcemap" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  key    = "bundle.js.map"
+  source = "../client/dist/bundle.js.map"
+  etag   = "${md5(file("../client/dist/bundle.js.map"))}"
 }
 
 /* DynamoDB Database */
@@ -265,6 +304,9 @@ resource "aws_lambda_permission" "allow_api_gateway" {
 /* Output the URL to find the API at */
 output "api_base" {
     value = "${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
+}
+output "website_endpoint" {
+    value = "${aws_s3_bucket.website.website_endpoint}"
 }
 output "env" {
     value = "SET AWS_REGION=${var.aws_region}&& SET DB_TABLE_NAME=${aws_dynamodb_table.main-table.id}&& SET API_BASE=${aws_api_gateway_deployment.list-counter-deployment.invoke_url}"
