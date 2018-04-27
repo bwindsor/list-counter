@@ -14,13 +14,14 @@ export default class ApiClient {
         return fetch(this.apiBase + '/item').then(res => res.json())
     }
 
-    incrementItem(id: string): Promise<void> {
+    incrementItem(id: string): Promise<number> {
         return this.getAllItems().then(item => {
             let itemToUpdate = item.filter(d => d.name === id)[0]
+            let newCount = itemToUpdate.count + 1
             return this.putItem({
                 name: id,
-                count: itemToUpdate.count + 1
-            })
+                count: newCount
+            }).then(() => newCount)
         }
         )
     }

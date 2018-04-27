@@ -3,6 +3,7 @@ import ApiClient from "../ApiClient"
 import {Item} from "../ApiClient"
 import * as links from "../resources/links"
 import Story from "./Story"
+import PlusOne from "./PlusOne"
 import NewStory from "./NewStory"
 import {validateStoryName} from "../validation"
 
@@ -24,14 +25,19 @@ export default class App extends React.Component<undefined, AppState> {
 
     componentDidMount() {
         this.state.apiClient.getAllItems().then(items => {
-            if (this.isUnmounted) { return }
-            items.sort(this.itemSorter)
-            this.setState({items: items})
+            this.setItemsState(items)
         })
     }
 
+    setItemsState(items: Item[]) {
+        if (this.isUnmounted) { return }
+        items = items.slice(0)
+        items.sort(this.itemSorter)
+        this.setState({items: items})
+    }
+
     itemSorter(a: Item,b: Item): number {
-        return a.count - b.count
+        return b.count - a.count
     }
 
     componentWillUnmount() {
@@ -46,9 +52,19 @@ export default class App extends React.Component<undefined, AppState> {
         this.state.apiClient.putItem(newItem).then(() => {
             let updatedItems = this.state.items.slice(0)
             updatedItems.push(newItem)
-            updatedItems.sort(this.itemSorter)
-            if (this.isUnmounted) { return }
-            this.setState({items: updatedItems})
+            this.setItemsState(updatedItems)
+        })
+    }
+
+    plusOne(name: string) {
+        this.state.apiClient.incrementItem(name).then(newCount => {
+            let updatedItems = this.state.items.slice(0)
+            let idxToUpdate = updatedItems.map(d => d.name).indexOf(name)
+            updatedItems[idxToUpdate] = {
+                name: name,
+                count: newCount
+            }
+            this.setItemsState(updatedItems)
         })
     }
 
@@ -61,7 +77,14 @@ export default class App extends React.Component<undefined, AppState> {
                 onAdd={s => this.addStory(s)}
                 nameValidator={s => validateStoryName(s, names)}
             /></div>
-            {this.state.items.map((item, i) => <Story key={`story-${i}`} name={item.name} count={item.count} />)}
+            {this.state.items.map((item, i) => this.renderStoryRow(item, i))}
         </div>
+    }
+
+    renderStoryRow(item: Item, i: number) {
+        return <div key={`story-${i}`}>
+            <Story name={item.name} count={item.count} />
+            <PlusOne onPlusOne={() => this.plusOne(item.name)} enabled={true} />
+            </div>
     }
 }
