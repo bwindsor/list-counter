@@ -72,6 +72,14 @@ resource "aws_s3_bucket_object" "environment" {
   key    = "environment.js"
   content = "${data.template_file.js-environment.rendered}"
 }
+resource "aws_s3_bucket_object" "favicon" {
+  bucket = "${aws_s3_bucket.website.id}"
+  acl    = "public-read"
+  content_type = "image/x-icon"
+  key    = "favicon.ico"
+  source = "../client/dist/favicon.ico"
+  etag   = "${md5(file("../client/dist/favicon.ico"))}"
+}
 data "template_file" "js-environment" {
     template = "${file("environment.js")}"
 
