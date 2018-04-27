@@ -292,6 +292,22 @@ resource "aws_iam_role_policy" "api_gateway_execute_lambda_policy" {
 EOF
 }
 
+/* Throttle limits - set quite low since it should be low use */
+resource "aws_api_gateway_method_settings" "api_throttle_setting" {
+  rest_api_id = "${aws_api_gateway_rest_api.list-counter-api.id}"
+  stage_name  = "${aws_api_gateway_deployment.list-counter-deployment.stage_name}"
+  method_path = "*/*"
+
+  settings {
+    throttling_burst_limit = 10
+    throttling_rate_limit = 20
+    
+    metrics_enabled = true
+    logging_level   = "INFO"
+
+  }
+}
+
 /* Permission on lambda's end to allow API gateway to invoke it */
 resource "aws_lambda_permission" "allow_api_gateway" {
     statement_id   = "${local.deployment_name}-AllowExecutionFromAPIGateway"
@@ -300,6 +316,91 @@ resource "aws_lambda_permission" "allow_api_gateway" {
     principal      = "apigateway.amazonaws.com"
     source_arn     = "${aws_api_gateway_deployment.list-counter-deployment.execution_arn}"
 }
+
+
+/* Global account config for api writing to cloudwatch */
+resource "aws_api_gateway_account" "global_api_role" {
+  cloudwatch_role_arn = "${aws_iam_role.cloudwatch.arn}"
+}
+
+/* This is used by api gateway to write to cloudwatch */
+resource "aws_iam_role" "cloudwatch" {
+  name = "api_gateway_cloudwatch_global"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+/* Role allowing API gateway to use write logs */
+resource "aws_iam_role_policy" "cloudwatch" {
+  name = "global_api_cloudwatch_role"
+  role = "${aws_iam_role.cloudwatch.id}"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+/* Alarm for high usage */
+resource "aws_cloudwatch_metric_alarm" "high-api-usage" {
+  alarm_name                = "${local.deployment_name}-api-high-usage"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  metric_name               = "Count"
+  namespace                 = "AWS/ApiGateway"
+  period                    = "300"
+  statistic                 = "Sum"
+  threshold                 = "100"
+  alarm_description         = "Too many API requests"
+  alarm_actions             = ["${aws_sns_topic.api_cloudwatch_notifications.arn}"]
+
+  dimensions {
+      ApiName = "${aws_api_gateway_rest_api.list-counter-api.name}"
+  }
+}
+
+resource "aws_sns_topic" "api_cloudwatch_notifications" {
+  name = "${local.deployment_name}_cloudwatch_notifications"
+}
+/*
+Email is unsupported - configure the subscription manually.
+resource "aws_sns_topic_subscription" "xxxx_cloudwatch_notifications" {
+    topic_arn = "${aws_sns_topic.xxxx_cloudwatch_notifications.arn}"
+    protocol  = "email"
+    endpoint  = "email@gmail.com"
+}
+*/
+
 
 /* Output the URL to find the API at */
 output "website_endpoint" {
