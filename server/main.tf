@@ -426,6 +426,76 @@ resource "aws_sns_topic_subscription" "xxxx_cloudwatch_notifications" {
 */
 
 
+/*** Backups ***/
+/* Cloudwatch role which is allowed to trigger lambda */
+resource "aws_iam_role" "iam_for_cloudwatch" {
+  name = "${local.deployment_name}-cloudwatch-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": ["events.amazonaws.com"]
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+/* Policy attached to cloudwatch execution role to allow lambda execution on db backup function */
+resource "aws_iam_role_policy" "cloudwatch_execute_policy" {
+  name = "${local.deployment_name}-cloudwatch_execute_policy"
+  role = "${aws_iam_role.iam_for_cloudwatch.id}"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction"
+            ],
+            "Resource": "${aws_lambda_function.backupDb.arn}"
+        }
+    ]
+}
+EOF
+}
+
+/* Trigger to run the backup */
+resource "aws_cloudwatch_event_rule" "run-backup" {
+  name        = "${local.deployment_name}-run_backup"
+  description = "Run backup of DB"
+  /* 1st of the month at 3am */
+  schedule_expression = "cron(0 3 1 * ? *)"
+  role_arn = "${aws_iam_role.iam_for_cloudwatch.arn}"
+  is_enabled = true
+}
+
+resource "aws_cloudwatch_event_target" "run-backup-target" {
+  rule      = "${aws_cloudwatch_event_rule.run-backup.name}"
+  target_id = "${local.deployment_name}-db-backup-cloudwatch-event-target"
+  arn       = "${aws_lambda_function.backupDb.arn}"
+  input     = "{}"
+}
+
+/* Permission on lambda's end to allow cloudwatch to invoke it */
+resource "aws_lambda_permission" "allow_cloudwatch_db_backup" {
+  statement_id   = "${local.deployment_name}-AllowExecutionFromCloudWatch"
+  action         = "lambda:InvokeFunction"
+  function_name  = "${aws_lambda_function.backupDb.function_name}"
+  principal      = "events.amazonaws.com"
+  source_arn     = "${aws_cloudwatch_event_rule.run-backup.arn}"
+}
+
+
 /* Output the URL to find the API at */
 output "website_endpoint" {
     value = "${aws_s3_bucket.website.website_endpoint}"
