@@ -28,6 +28,9 @@ export default class ApiClient {
     putItem(item: Item): Promise<void> {
         return fetch(this.apiBase + '/item', {
             body: JSON.stringify(item),
+            headers: {
+                "Content-Type": "application/json"
+            },
             method: "POST"
         }).then(res => {
             if (res.status !== 200) {

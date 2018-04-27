@@ -4,6 +4,7 @@ import {Item} from "../ApiClient"
 import * as links from "../resources/links"
 import Story from "./Story"
 import NewStory from "./NewStory"
+import {validateStoryName} from "../validation"
 
 interface AppState {
     apiClient: ApiClient
@@ -52,8 +53,14 @@ export default class App extends React.Component<undefined, AppState> {
     }
 
     render() {
+        let names = this.state.items.map(d => d.name)
+
         return <div>
-            <NewStory onAdd={s => this.addStory(s)}/>
+            <div>
+            <NewStory
+                onAdd={s => this.addStory(s)}
+                nameValidator={s => validateStoryName(s, names)}
+            /></div>
             {this.state.items.map((item, i) => <Story key={`story-${i}`} name={item.name} count={item.count} />)}
         </div>
     }

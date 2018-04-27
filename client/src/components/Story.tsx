@@ -14,7 +14,7 @@ interface StoryState {
 export default class Story extends React.Component<StoryProps, StoryState> {
     
     render() {
-        return <div style={{fontSize: this.props.count}}>
+        return <div style={{fontSize: this.props.count + 5}}>
             {this.props.name}: {this.props.count}
         </div>
     }
