@@ -113,6 +113,11 @@ data "archive_file" "distribute_lambda_getAllItems" {
     output_path = "${path.module}/artifacts/distribute_lambda_getAllItems.zip"
     source_file = "${path.module}/lambda/GetAllItems.js"
 }
+data "archive_file" "lambda_db_backup" {
+    type        = "zip"
+    output_path = "${path.module}/artifacts/lambda_db_backup.zip"
+    source_file = "${path.module}/lambda/BackupDb.js"
+}
 
 /* Get strings and counts */
 resource "aws_lambda_function" "getAllItems" {
@@ -143,6 +148,24 @@ resource "aws_lambda_function" "putItem" {
     timeout          = 5
     memory_size      = 128
     description      = "Adds or updates an item in the database"
+    environment {
+        variables = {
+            DB_TABLE_NAME = "${aws_dynamodb_table.main-table.id}"   
+        }
+    }
+}
+
+/* Backup DB */
+resource "aws_lambda_function" "backupDb" {
+    filename         = "${data.archive_file.lambda_db_backup.output_path}"
+    function_name    = "${local.deployment_name}-db_backup"
+    role             = "${aws_iam_role.iam_for_lambda.arn}"
+    handler          = "BackupDb.handler"
+    source_code_hash = "${base64sha256(file("${data.archive_file.lambda_db_backup.output_path}"))}"
+    runtime          = "nodejs8.10"
+    timeout          = 10
+    memory_size      = 128
+    description      = "Creates a database backup"
     environment {
         variables = {
             DB_TABLE_NAME = "${aws_dynamodb_table.main-table.id}"   
@@ -214,7 +237,8 @@ resource "aws_iam_role_policy" "lambda_dynamodb_access_policy" {
                 "dynamodb:PutItem",
                 "dynamodb:GetItem",
                 "dynamodb:Scan",
-                "dynamodb:Query"
+                "dynamodb:Query",
+                "dynamodb:CreateBackup"
             ],
             "Resource": "${aws_dynamodb_table.main-table.arn}"
         }
