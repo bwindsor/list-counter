@@ -7,6 +7,7 @@
     "deploy-setup": "terraform init && terraform workspace new production && terraform workspace new test",
     "AddItem": "node lambda/AddItem/AddItem.js",
     "test": "terraform workspace select test && mocha test/**/*.spec.js",
+    "loadtest": "terraform workspace select test && mocha test/LoadTest.js",
     "build-client": "cd ../client && npm run build",
     "deploy-test": "npm run build-client && terraform workspace select test && terraform apply",
     "deploy-prod": "npm run build-client && terraform workspace select production && terraform apply"
