@@ -1,11 +1,11 @@
 import * as React from "react"
 import ApiClient from "../ApiClient"
-import {Item} from "../ApiClient"
+import { Item } from "../ApiClient"
 import * as links from "../resources/links"
 import Story from "./Story"
 import PlusOne from "./PlusOne"
 import NewStory from "./NewStory"
-import {validateStoryName} from "../validation"
+import { validateStoryName } from "../validation"
 
 interface AppState {
     apiClient: ApiClient
@@ -14,6 +14,7 @@ interface AppState {
 
 export default class App extends React.Component<undefined, AppState> {
     isUnmounted: boolean = false
+    rowClass = "row align-items-center border border-primary rounded m-1 p-1"
 
     constructor(props: any) {
         super(props)
@@ -33,10 +34,10 @@ export default class App extends React.Component<undefined, AppState> {
         if (this.isUnmounted) { return }
         items = items.slice(0)
         items.sort(this.itemSorter)
-        this.setState({items: items})
+        this.setState({ items: items })
     }
 
-    itemSorter(a: Item,b: Item): number {
+    itemSorter(a: Item, b: Item): number {
         return b.count - a.count
     }
 
@@ -56,8 +57,8 @@ export default class App extends React.Component<undefined, AppState> {
         })
     }
 
-    plusOne(name: string) {
-        this.state.apiClient.incrementItem(name).then(newCount => {
+    plusOne(name: string) : Promise<void> {
+        return this.state.apiClient.incrementItem(name).then(newCount => {
             let updatedItems = this.state.items.slice(0)
             let idxToUpdate = updatedItems.map(d => d.name).indexOf(name)
             updatedItems[idxToUpdate] = {
@@ -71,20 +72,24 @@ export default class App extends React.Component<undefined, AppState> {
     render() {
         let names = this.state.items.map(d => d.name)
 
-        return <div>
-            <div>
-            <NewStory
-                onAdd={s => this.addStory(s)}
-                nameValidator={s => validateStoryName(s, names)}
-            /></div>
+        return <div className="container-fluid">
+                <NewStory
+                    rowClass={this.rowClass}
+                    onAdd={s => this.addStory(s)}
+                    nameValidator={s => validateStoryName(s, names)}
+                />
             {this.state.items.map((item, i) => this.renderStoryRow(item, i))}
         </div>
     }
 
     renderStoryRow(item: Item, i: number) {
-        return <div key={`story-${i}`}>
-            <Story name={item.name} count={item.count} />
-            <PlusOne onPlusOne={() => this.plusOne(item.name)} enabled={true} />
+        return <div key={`story-${i}`} className={this.rowClass}>
+            <div className="col mr-auto">
+                <Story name={item.name} count={item.count} />
             </div>
+            <div className="col-auto px-0">
+                <PlusOne onPlusOne={() => this.plusOne(item.name)} />
+            </div>
+        </div>
     }
 }

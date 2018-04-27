@@ -1,15 +1,7 @@
-.input-valid {
-    border-color: green;
+body {
+    background-color: lightblue;
 }
 
-.input-invalid {
-    border-color: red;
-}
-
-.enabled-plus-one {
-
-}
-
-.disabled-plus-one {
-    
+.plus-one {
+    width: 45px;
 }
