@@ -34,11 +34,9 @@ export default class PlusOne extends React.Component<PlusOneProps, PlusOneState>
     }
 
     onClick() {
-        console.log('dis')
         this.setState({enabled: false})
         this.props.onPlusOne()
             .then(() => {
-                console.log('en')
                 this.setState({enabled: true})
             })
             .catch((err) => {
